@@ -8,7 +8,7 @@ description = "3d tessellation library."
 repository = "https://github.com/hmeyer/tessellation"
 readme = "README.md"
 keywords = ["tessellation", "3d", "manifold", "dual-contouring"]
-license = "GPL-3.0"
+license = "Apache-2.0 OR MIT"
 
 [lib]
 name = "tessellation"
