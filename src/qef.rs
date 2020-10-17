@@ -1,8 +1,8 @@
 use alga::general::RealField;
 use bbox::BoundingBox;
-use na;
+use crate::na;
 use num_traits::Float;
-use plane::Plane;
+use crate::plane::Plane;
 use std::convert;
 use std::fmt::Debug;
 
@@ -152,7 +152,7 @@ impl<S: 'static + RealField + Float + Debug + From<f32>> Qef<S> {
 mod tests {
     use super::Plane;
     use super::{BoundingBox, Qef};
-    use na;
+    use crate::na;
 
     #[test]
     fn origin() {
