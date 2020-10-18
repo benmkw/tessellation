@@ -1,5 +1,5 @@
 use alga::general::RealField;
-use crate::na;
+use nalgebra as na;
 use std::fmt::Debug;
 
 /// Mesh that will be returned from tessellate.

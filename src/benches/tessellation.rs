@@ -1,10 +1,5 @@
- extern crate alga;
 #[macro_use]
 extern crate bencher;
-extern crate implicit3d;
-extern crate nalgebra;
-extern crate num_traits;
-extern crate tessellation;
 use alga::general::RealField;
 use bencher::Bencher;
 use implicit3d::{
@@ -46,14 +41,18 @@ fn create_cube<S: From<f32> + Float + RealField>() -> Box<dyn Object<S>> {
             Box::new(PlaneNegZ::new(one)),
         ],
         zero,
-    ).unwrap() as Box<dyn Object<S>>
+    )
+    .unwrap() as Box<dyn Object<S>>
 }
 
 fn create_hollow_cube<S: From<f32> + Float + RealField>() -> Box<dyn Object<S>> {
     let point_two: S = From::from(0.2f32);
     let point_five: S = From::from(0.5f32);
-    Intersection::difference_from_vec(vec![create_cube(), Box::new(Sphere::new(point_five))], point_two)
-        .unwrap() as Box<dyn Object<S>>
+    Intersection::difference_from_vec(
+        vec![create_cube(), Box::new(Sphere::new(point_five))],
+        point_two,
+    )
+    .unwrap() as Box<dyn Object<S>>
 }
 
 fn create_object<S: RealField + AsUSize + Float + From<f32>>() -> ObjectAdaptor<S> {

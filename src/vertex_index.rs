@@ -15,8 +15,9 @@ use crate::bitset::BitSet;
 //  o-------0-------+         +-- higher indexes in x ---->
 
 // Face order X0, X1, Y0, Y1, Z0, Z1
-lazy_static! {
+lazy_static::lazy_static! {
     pub static ref EDGES_ON_FACE: [BitSet; 6] = [
+
         BitSet::from_4bits(1, 2, 7, 8),
         BitSet::from_4bits(4, 5, 10, 11),
         BitSet::from_4bits(0, 2, 5, 6),

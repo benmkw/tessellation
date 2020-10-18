@@ -1,20 +1,20 @@
 use super::{AsUSize, ImplicitFunction};
-use alga::general::RealField;
-use bbox::BoundingBox;
 use crate::bitset::BitSet;
 use crate::cell_configs::CELL_CONFIGS;
 use crate::mesh::Mesh;
-use crate::na;
-use num_traits::Float;
 use crate::plane::Plane;
 use crate::qef;
-use rand;
+use alga::general::RealField;
+use bbox::BoundingBox;
+use nalgebra as na;
+use num_traits::Float;
+
+use crate::vertex_index::{neg_offset, offset, Index, VarIndex, VertexIndex, EDGES_ON_FACE};
 use rayon::prelude::*;
 use std::cell::{Cell, RefCell};
 use std::cmp;
 use std::collections::{BTreeSet, HashMap};
 use std::{error, fmt};
-use crate::vertex_index::{neg_offset, offset, Index, VarIndex, VertexIndex, EDGES_ON_FACE};
 
 // How accurately find zero crossings.
 const PRECISION: f32 = 0.05;
@@ -97,7 +97,7 @@ const QUADS: [[Edge; 4]; 3] = [
     [Edge::C, Edge::I, Edge::L, Edge::F],
 ];
 
-lazy_static! {
+lazy_static::lazy_static! {
     static ref OUTSIDE_EDGES_PER_CORNER: [BitSet; 8] = [
         BitSet::from_3bits(0, 1, 2),
         BitSet::from_3bits(0, 4, 5),
@@ -292,7 +292,10 @@ fn add_connected_vertices_in_subcell<S: RealField>(
     }
 }
 
-fn add_child_to_parent<S: RealField + Float + From<f32>>(child: &Vertex<S>, parent: &mut Vertex<S>) {
+fn add_child_to_parent<S: RealField + Float + From<f32>>(
+    child: &Vertex<S>,
+    parent: &mut Vertex<S>,
+) {
     parent.qef.borrow_mut().merge(&*child.qef.borrow());
     for dim in 0..3 {
         let relevant_neighbor = dim * 2 + (child.index[dim] & 1);
@@ -391,15 +394,17 @@ fn subsample_octtree<S: RealField + Float + From<f32>>(base: &[Vertex<S>]) -> Ve
 }
 
 struct Timer {
-    t: ::time::Tm,
+    t: std::time::Instant,
 }
 
 impl Timer {
     fn new() -> Timer {
-        Timer { t: ::time::now() }
+        Timer {
+            t: std::time::Instant::now(),
+        }
     }
-    fn elapsed(&mut self) -> ::time::Duration {
-        let now = ::time::now();
+    fn elapsed(&mut self) -> std::time::Duration {
+        let now = std::time::Instant::now();
         let result = now - self.t;
         self.t = now;
         result
@@ -486,7 +491,7 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
         }
         let total_cells = self.dim[0] * self.dim[1] * self.dim[2];
         println!(
-            "generated value_grid with {:} % of {:} cells in {:}.",
+            "generated value_grid with {:} % of {:} cells in {:?}.",
             (100 * self.value_grid.len()) as f64 / total_cells as f64,
             total_cells,
             t.elapsed()
@@ -494,7 +499,7 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
 
         self.compact_value_grid();
         println!(
-            "compacted value_grid, now {:} % of {:} cells in {:}.",
+            "compacted value_grid, now {:} % of {:} cells in {:?}.",
             (100 * self.value_grid.len()) as f64 / total_cells as f64,
             total_cells,
             t.elapsed()
@@ -503,7 +508,7 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
         self.generate_edge_grid();
 
         println!(
-            "generated edge_grid with {} edges: {:}",
+            "generated edge_grid with {} edges: {:?}",
             self.edge_grid.borrow().len(),
             t.elapsed()
         );
@@ -513,7 +518,7 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
         self.vertex_octtree.push(leafs);
 
         println!(
-            "generated {:?} leaf vertices: {:}",
+            "generated {:?} leaf vertices: {:?}",
             self.vertex_octtree[0].len(),
             t.elapsed()
         );
@@ -525,16 +530,16 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
             }
             self.vertex_octtree.push(next);
         }
-        println!("subsampled octtree {:}", t.elapsed());
+        println!("subsampled octtree {:?}", t.elapsed());
 
         let num_qefs_solved = self.solve_qefs();
 
-        println!("solved {} qefs: {:}", num_qefs_solved, t.elapsed());
+        println!("solved {} qefs: {:?}", num_qefs_solved, t.elapsed());
 
         for edge_index in self.edge_grid.borrow().keys() {
             self.compute_quad(*edge_index);
         }
-        println!("generated quads: {:}", t.elapsed());
+        println!("generated quads: {:?}", t.elapsed());
 
         println!(
             "computed mesh with {:?} faces.",
@@ -621,7 +626,8 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
                     }
                 }
                 true
-            }).map(|(k, _)| *k)
+            })
+            .map(|(k, _)| *k)
             .collect();
         for k in keys_to_remove {
             value_grid.remove(&k);
@@ -797,7 +803,8 @@ impl<'a, S: From<f32> + RealField + Float + AsUSize> ManifoldDualContouring<'a, 
                             edge: Edge::from_usize(edge),
                             index: idx,
                         })
-                    }).collect();
+                    })
+                    .collect();
                 let cell_origin = self.origin
                     + na::Vector3::new(
                         From::from(idx[0] as f32),

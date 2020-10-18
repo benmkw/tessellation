@@ -1,8 +1,8 @@
+use crate::plane::Plane;
 use alga::general::RealField;
 use bbox::BoundingBox;
-use crate::na;
+use nalgebra as na;
 use num_traits::Float;
-use crate::plane::Plane;
 use std::convert;
 use std::fmt::Debug;
 
@@ -134,7 +134,8 @@ impl<S: 'static + RealField + Float + Debug + From<f32>> Qef<S> {
     }
     fn error(&self, point: &na::Vector3<S>, ma: &na::Matrix3<S>) -> S {
         let _2_as_s: S = convert::From::from(2f32);
-        self.btb - _2_as_s * na::Matrix::dot(point, &self.atb) + na::Matrix::dot(point, &(*ma * *point))
+        self.btb - _2_as_s * na::Matrix::dot(point, &self.atb)
+            + na::Matrix::dot(point, &(*ma * *point))
     }
     pub fn merge(&mut self, other: &Qef<S>) {
         for i in 0..6 {
@@ -152,7 +153,7 @@ impl<S: 'static + RealField + Float + Debug + From<f32>> Qef<S> {
 mod tests {
     use super::Plane;
     use super::{BoundingBox, Qef};
-    use crate::na;
+    use nalgebra as na;
 
     #[test]
     fn origin() {
